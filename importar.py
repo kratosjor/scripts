@@ -4,6 +4,7 @@ from PySide2 import QtWidgets, QtCore, QtGui
 
 rt = pymxs.runtime
 carpeta_modelos = r"C:\Users\Jordan\Desktop\Cursos Programacion\Max\modelos"
+imagen_default = "default.jpg"  # Nombre de la imagen predeterminada
 
 class OpcionesImportacionDialog(QtWidgets.QDialog):
     def __init__(self):
@@ -32,12 +33,18 @@ class TarjetaModelo(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout(self)
         layout.setAlignment(QtCore.Qt.AlignCenter)
 
-        # Imagen de vista previa
-        if os.path.exists(ruta_imagen):
+        # Si no hay una imagen específica, usa la imagen predeterminada
+        if ruta_imagen and os.path.exists(ruta_imagen):
             pixmap = QtGui.QPixmap(ruta_imagen).scaled(100, 100, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         else:
-            pixmap = QtGui.QPixmap(100, 100)
-            pixmap.fill(QtCore.Qt.lightGray)
+            # Si no se encuentra la imagen, usa la imagen default.jpg o default.png
+            ruta_imagen_default = os.path.join(carpeta_modelos, imagen_default)
+            if os.path.exists(ruta_imagen_default):
+                pixmap = QtGui.QPixmap(ruta_imagen_default).scaled(100, 100, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+            else:
+                # Si no existe default.jpg o default.png, usar un fondo gris claro
+                pixmap = QtGui.QPixmap(100, 100)
+                pixmap.fill(QtCore.Qt.lightGray)
 
         label_img = QtWidgets.QLabel()
         label_img.setPixmap(pixmap)
@@ -85,6 +92,7 @@ class ImportarModelosDialog(QtWidgets.QDialog):
                 nombre = os.path.splitext(archivo)[0]
                 ruta_modelo = os.path.join(carpeta_modelos, archivo)
 
+                # Revisar si hay una imagen asociada
                 ruta_imagen = None
                 for ext in [".jpg", ".png"]:
                     posible_imagen = os.path.join(carpeta_modelos, nombre + ext)
@@ -92,6 +100,7 @@ class ImportarModelosDialog(QtWidgets.QDialog):
                         ruta_imagen = posible_imagen
                         break
 
+                # Aquí pasamos siempre una ruta válida, incluso si es la imagen predeterminada
                 tarjeta = TarjetaModelo(nombre, ruta_modelo, ruta_imagen, self.importar_modelo)
                 self.grid.addWidget(tarjeta, fila, columna)
 
